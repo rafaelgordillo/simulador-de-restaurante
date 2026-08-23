@@ -155,6 +155,11 @@ while (seguirBuscando != "si" && seguirBuscando != "no") {
 }
    
 //Encabezado del ticket que saluda al cliente
+console.log("---------------------------------");
+console.log("       Detalle del pedido        ");
+console.log("---------------------------------");
+
+
 console.log("Hola " + nombre + " tu pedido es:");
 
 //aqui pide la cantidad de opciones que va a pedir el cliente mediante la funcion mostrarMenu()
