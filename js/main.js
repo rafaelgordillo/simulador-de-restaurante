@@ -1,6 +1,5 @@
 // CLASE PRODUCTO
 class Producto {
-
     constructor(nombre, precio, categoria, stock) {
         this.nombre = nombre;
         this.precio = precio;
@@ -9,276 +8,289 @@ class Producto {
     }
 
     vender(cantidad) {
-
         if (cantidad <= this.stock) {
             this.stock -= cantidad;
             return `Venta realizada. Quedan ${this.stock} unidades.`;
         }
-
         return "No hay stock suficiente.";
     }
 }
 
 // INSTANCIAS DE PRODUCTOS
-
 const pizza = new Producto("Pizza muzzarella", 18000, "Pizzas", 50);
-
-const hamburguesa = new Producto("Hamburguesa simple",10000, "Hamburguesas",80);
-
-const ensalada = new Producto( "Ensalada César", 8000,"Ensaladas", 50);
-
-const gaseosa = new Producto("Gaseosa",4000, "Gaseosas", 100);
-
+const hamburguesa = new Producto("Hamburguesa simple", 10000, "Hamburguesas", 80);
+const ensalada = new Producto("Ensalada César", 8000, "Ensaladas", 50);
+const gaseosa = new Producto("Gaseosa", 4000, "Gaseosas", 100);
 const papasFritas = new Producto("Papas fritas", 4000, "Papas", 50);
-
 const flan = new Producto("Flan casero", 5000, "Postres", 50);
-
 const milanesa = new Producto("Milanesa de carne", 10000, "Milanesas", 50);
-
 const pancho = new Producto("Pancho grande", 7000, "Panchos", 100);
 
-
-// ARRAY DEL MENÚ
+// 1. ARRAY DE OBJETOS (ARRAY DEL MENÚ)
 const menu = [pizza, hamburguesa, ensalada, gaseosa, papasFritas, flan, milanesa, pancho];
 
 // VARIABLES
 let total = 0;
 
-// FUNCIONES
-// Muestra el menú utilizando el array de objetos
+// FUNCIONES 
+//Muestra el menu del dia mediante un for
 function mostrarMenu() {
-
     let mensaje = "*** MENÚ DEL DÍA ***\n";
-
     for (let i = 0; i < menu.length; i++) {
-
         mensaje += `${i + 1} - ${menu[i].nombre} $${menu[i].precio}\n`;
     }
-
     return mensaje;
 }
-
-// Muestra un producto seleccionado
+//funcion para mostrar un producto con su numero de articulo, nombre, precio
 function mostrarProducto(numeroItem, producto) {
-    console.log( "art nº " + numeroItem + " - 1 " + producto.nombre + " $ " + producto.precio);
+    console.log("art nº " + numeroItem + " - 1 " + producto.nombre + " $ " + producto.precio);
 }
-
-// Calcula la propina
+//funcion para calcular la propina y retornar el resultado a la variable propina
 function calcularPropina(total, porcentaje) {
-
-    return total * porcentaje / 100;
+    return (total * porcentaje) / 100;
 }
-
-
-// Despedida del cliente
+//Funcion de la despedida y agradecimiento al cliente
 const agradecerAlCliente = function (nombre) {
-
     console.log("--------------------------------------");
     console.log("Gracias por tu visita " + nombre + ".");
     console.log("¡Te esperamos nuevamente!");
     console.log("======================================");
 };
-
-
-// Suma un precio al total
+//funcion para sumar al total el precio del producto
 const sumarAlTotal = (total, precio) => total + precio;
 
-
-// Muestra los productos del menú
+//Muestra la lista mediante un for of
 function mostrarListaDeProductos(lista) {
-
     console.log(
         "---------------------------------------------" +
         "\nLista de productos del menú" +
         "\n---------------------------------------------"
     );
-
     for (const producto of lista) {
-
-     console.log( "Producto: " + producto.nombre + " | Precio: $" + producto.precio + " | Categoría: " + 
-        producto.categoria + " | Stock: " + producto.stock);
+        console.log(
+            "Producto: " + producto.nombre +
+            " | Precio: $" + producto.precio +
+            " | Categoría: " + producto.categoria +
+            " | Stock: " + producto.stock
+        );
     }
 }
 
-// PANEL DE ADMINISTRACIÓN
+
+// ===================================================
+// PANEL DE ADMINISTRACIÓN (MÉTODOS DE ORDEN SUPERIOR)
+// ===================================================
 console.log("======================================");
 console.log("        Restaurante El Oasis");
 console.log("======================================");
-console.log("       PANEL DE ADMINISTRACION");
+console.log("        PANEL DE ADMINISTRACION");
 console.log("______________________________________");
-
 
 // Mostramos el menú actual
 mostrarListaDeProductos(menu);
 
-console.log( "\n" +
-    "/*************** FIN ADMINISTRACION *****************/");
-
-// PANEL DE ATENCIÓN AL CLIENTE
-console.log(
-    "\n" + 
-    "Inicio panel de atención al cliente" +
-    "\n----------------------------------------------"
+// PANEL DE ADMINISTRACIÓN
+let opcionAdmin = prompt(
+    "PANEL DE ADMINISTRACIÓN\n\n" +
+    "1 - Ver resumen de precios\n" +
+    "2 - Ver valor total del inventario\n" +
+    "3 - Verificar stock bajo\n" +
+    "4 - Panel de cliente"
 );
 
-// INICIO DEL TICKET
+while (opcionAdmin !== "4") {
+
+    switch (opcionAdmin) {
+
+        case "1":
+            // aplicamos map
+            const resumenPrecios = menu.map(
+                producto => `${producto.nombre}: $${producto.precio}`
+            );
+
+            console.log("\n--- Resumen rápido de carta (Map) ---");
+            console.log(resumenPrecios.join(" | "));
+            break;
+
+        case "2":
+            //aplicamos reduce
+            const valorTotalInventario = menu.reduce(
+                (acc, producto) => acc + (producto.precio * producto.stock),
+                0
+            );
+
+            console.log(
+                `\nValor total en inventario (Reduce): $${valorTotalInventario}`
+            );
+            break;
+
+        case "3":
+            // aplicamos some
+            const hayStockBajo = menu.some(
+                (producto) => producto.stock < 40 );
+
+                if (hayStockBajo) {
+                   console.log("revisar reposicion de stock");   
+                    
+                } else {
+                    console.log("hay stock suficiente");    
+                }
+           
+            break;
+
+        default:
+            alert("Opción inválida. Elegí una opción del 1 al 4.");
+    }
+
+    opcionAdmin = prompt(
+        "PANEL DE ADMINISTRACIÓN\n\n" +
+        "1 - Ver resumen de precios\n" +
+        "2 - Ver valor total del inventario\n" +
+        "3 - Verificar stock bajo\n" +
+        "4 - Panel de cliente"
+    );
+}
+
+console.log("\n/*************** FIN ADMINISTRACION *****************/\n");
+
+
+// ===================================================
+// PANEL DE ATENCIÓN AL CLIENTE
+// ===================================================
+console.log("Inicio panel de atención al cliente");
+console.log("----------------------------------------------");
 console.log("======================================");
 console.log("        Restaurante El Oasis");
 console.log("======================================");
 
 // Pedimos nombre del cliente
-let nombre = prompt("¡Bienvenido!" +
-    "\nIngresá tu nombre:"
-);
+let nombre = prompt("¡Bienvenido!\nIngresá tu nombre:");
 
-// Comprobamos que sea un nombre y no un número
-while (!isNaN(nombre)) {
-
-    alert("El dato ingresado no es un nombre. Intentá nuevamente.");
-
+while (!isNaN(nombre) || !nombre) {
+    alert("El dato ingresado no es un nombre válido. Intentá nuevamente.");
     nombre = prompt("Ingresá tu nombre:");
 }
 
-// Mostramos el menú
-mostrarListaDeProductos(menu);
+// Aplicamos filter()
+// Permite al cliente filtrar por una categoría específica
+let filtrar = prompt("¿Deseas filtrar la carta por categoría? (si/no)").toLowerCase();
+if (filtrar === "si") {
+    let catBuscada = prompt("Ingresá la categoría a buscar: Pizzas, Hamburguesas, Ensaladas, Gaseosas, Papas, Postres, Milanesas):");
+    
+    // Aplicación del método filter()
+    const productosFiltrados = menu.filter((producto) => producto.categoria.toLowerCase() === catBuscada.toLowerCase());
+    
+    if (productosFiltrados.length > 0) {
+        console.log(`\n--- Resultados para la categoría '${catBuscada}' (Filter) ---`);
+        mostrarListaDeProductos(productosFiltrados);
+    } else {
+        console.log(`No se encontraron productos en la categoría '${catBuscada}'. Mostramos menú completo:`);
+        mostrarListaDeProductos(menu);
+    }
+} else {
+   
+   mostrarListaDeProductos(menu);
+}
 
-// BÚSQUEDA DE PRODUCTOS
+// Aplicamos find()
+// Búsqueda puntual por nombre completo
 let seguirBuscando = "si";
 
-while (seguirBuscando == "si") {
+while (seguirBuscando === "si") {
+    let productoBuscado = prompt("Escribí el nombre completo del producto que buscás:");
 
-    let productoBuscado = prompt( "Escribí el nombre exacto del producto que buscás");
-
-    // Buscamos dentro del array de objetos
-    const productoEncontrado = menu.find(producto => producto.nombre.toLowerCase() === productoBuscado.toLowerCase());
+    // Aplicación del método find()
+    const productoEncontrado = menu.find(
+        producto => producto.nombre.toLowerCase() === productoBuscado.toLowerCase()
+    );
 
     if (productoEncontrado) {
-        const posicionDelProducto =
-            menu.indexOf(productoEncontrado);
-
-        console.log( "El producto " + productoEncontrado.nombre + " está disponible en la posición: " 
-            + posicionDelProducto);
-
+        const posicionDelProducto = menu.indexOf(productoEncontrado);
+        console.log(`El producto ${productoEncontrado.nombre} está disponible en la posición: ${posicionDelProducto}`);
     } else {
-
-        console.log("El producto " + productoBuscado + " no existe en el menú.");
+        console.log(`El producto ${productoBuscado} no existe en el menú.`);
     }
 
-    seguirBuscando = prompt("¿Querés buscar otro producto? (si/no)");
+    seguirBuscando = prompt("¿Querés buscar otro producto? (si/no)").toLowerCase();
 
-    while ( seguirBuscando != "si" && seguirBuscando != "no") {
-
+    while (seguirBuscando !== "si" && seguirBuscando !== "no") {
         alert("Respuesta inválida. Ingresá si o no.");
-
-        seguirBuscando = prompt( "¿Querés buscar otro producto? (si/no)");
+        seguirBuscando = prompt("¿Querés buscar otro producto? (si/no)").toLowerCase();
     }
 }
+
 
 // PEDIDO DEL CLIENTE
 console.log("---------------------------------");
 console.log("       Detalle del pedido");
 console.log("---------------------------------");
-
-console.log( "Hola " + nombre + ", tu pedido es:");
+console.log("Hola " + nombre + ", tu pedido es:");
 
 // Preguntamos cantidad de productos
-let cantidad = parseInt( prompt( mostrarMenu() +
-        "\nIngresá la cantidad de productos que vas a pedir:"
-    )
-);
+let cantidad = parseInt(prompt(mostrarMenu() + "\nIngresá la cantidad de productos que vas a pedir:"));
 
-// Validamos cantidad
 while (isNaN(cantidad) || cantidad <= 0) {
-
-    alert(
-        "El dato ingresado no es válido. Volvé a intentarlo."
-    );
-
-    cantidad = parseInt( prompt(  mostrarMenu() +
-            "\nIngresá la cantidad de productos que vas a pedir:"
-        )
-    );
+    alert("El dato ingresado no es válido. Volvé a intentarlo.");
+    cantidad = parseInt(prompt(mostrarMenu() + "\nIngresá la cantidad de productos que vas a pedir:"));
 }
 
-// SELECCIÓN DE PRODUCTOS
+// Seleccion de productos
 let productosValidados = 0;
 let numeroArticulo = 1;
 
-
 while (productosValidados < cantidad) {
-    const opcion = parseInt(prompt( mostrarMenu() +
+    const opcion = parseInt(
+        prompt(
+            mostrarMenu() +
             "\nIngresá el número de la opción que vas a pedir." +
-            "\nVas eligiendo " + numeroArticulo + " producto/s." )
+            "\nVas eligiendo " + numeroArticulo + " producto/s."
+        )
     );
 
-    // Verificamos que la opción exista
-    if ( isNaN(opcion) || opcion < 1 || opcion > menu.length) {
-
-        alert( "Opción inválida. Elegí un número del 1 al " + menu.length );
-
+    if (isNaN(opcion) || opcion < 1 || opcion > menu.length) {
+        alert("Opción inválida. Elegí un número del 1 al " + menu.length);
         continue;
     }
 
-    // Obtenemos el objeto seleccionado
     const productoSeleccionado = menu[opcion - 1];
 
-    // Mostramos el producto
     mostrarProducto(numeroArticulo, productoSeleccionado);
 
-    // Actualizamos el stock
     const resultadoVenta = productoSeleccionado.vender(1);
     console.log(resultadoVenta);
 
-    // Sumamos el precio al total
     total = sumarAlTotal(total, productoSeleccionado.precio);
 
     productosValidados++;
     numeroArticulo++;
 }
 
-// SUBTOTAL
+// Subtotal y propina
 console.log("--------------------------------------");
-console.log( "Subtotal: $ " + total);
+console.log("Subtotal: $ " + total);
 
-// PROPINA
-let dejarPropina = prompt("¿Dejás propina? (si/no)");
+let dejarPropina = prompt("¿Dejás propina? (si/no)").toLowerCase();
 
-
-while (dejarPropina != "si" && dejarPropina != "no") {
-
-    alert( "Respuesta inválida. Ingresá si o no." );
-
-    dejarPropina = prompt( "¿Dejás propina? (si/no)" );
+while (dejarPropina !== "si" && dejarPropina !== "no") {
+    alert("Respuesta inválida. Ingresá si o no.");
+    dejarPropina = prompt("¿Dejás propina? (si/no)").toLowerCase();
 }
 
-if (dejarPropina == "si") {
+if (dejarPropina === "si") {
+    let porcentaje = parseInt(prompt("Ingresá el porcentaje de la propina:"));
 
-    let porcentaje = parseInt( prompt( "Ingresá el porcentaje de la propina:"));
-
-
-    while ( isNaN(porcentaje) || porcentaje < 0 || porcentaje > 100) {
-
-        porcentaje = parseInt( prompt(
-                "Porcentaje no válido. " +
-                "Ingresá un valor entre 0 y 100."
-            )
-        );
+    while (isNaN(porcentaje) || porcentaje < 0 || porcentaje > 100) {
+        porcentaje = parseInt(prompt("Porcentaje no válido. Ingresá un valor entre 0 y 100."));
     }
 
-
     const propina = calcularPropina(total, porcentaje);
-
     const totalFinal = total + propina;
 
-
     console.log("Propina: $ " + propina);
-
-    console.log("TOTAL A PAGAR: $ " + totalFinal );
-
+    console.log("TOTAL A PAGAR: $ " + totalFinal);
 } else {
-
-    console.log( "TOTAL A PAGAR: $ " + total);
+    console.log("TOTAL A PAGAR: $ " + total);
 }
 
-// DESPEDIDA
+// Despedida
 agradecerAlCliente(nombre);
