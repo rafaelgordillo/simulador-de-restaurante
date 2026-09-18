@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,161 @@
     <link rel="stylesheet" href="css/style.css">
     <script defer src="js/main.js"></script>
 </head>
+
 <body>
-    <h1>Restaurante "El Oasis"</h1>
-    
+
+    <main class="wrapper">
+
+        <h1>El Oasis</h1>
+        <h2>Simulador de restaurante</h2>
+
+        <hr>
+
+        <!-- FORMULARIO PARA AGREGAR PRODUCTOS -->
+
+        <section class="form-section">
+
+            <h2>Agregar producto</h2>
+
+            <form id="formulario-producto">
+
+                <div>
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" required>
+                </div>
+
+                <div>
+                    <label for="precio">Precio:</label>
+                    <input type="text" id="precio" required>
+                </div>
+
+                <div>
+                    <label for="categoria">Categoría:</label>
+                    <input type="text" id="categoria" required>
+                </div>
+
+                <div>
+                    <label for="stock">Stock:</label>
+                    <input type="text" id="stock" required>
+                </div>
+
+                <button type="submit">
+                    + Agregar producto
+                </button>
+
+            </form>
+
+            <!-- MENSAJES PARA EL USUARIO -->
+
+        <p id="mensaje"></p>
+
+        </section>
+
+
+        <!-- BUSCADOR -->
+
+        <section class="search-section">
+
+            <h2>Buscar producto</h2>
+
+            <input type="text" id="buscador" placeholder="Escribí el nombre del producto...">
+
+        </section>
+
+
+        <!-- LISTADO DE PRODUCTOS -->
+
+        <section class="productos-section">
+
+            <h2>Menú</h2>
+
+            <div id="contenedor-productos" class="productos-grid">
+                <!-- JavaScript va a renderizar los productos acá -->
+            </div>
+
+        </section>
+
+        <!-- CARRITO DE COMPRAS -->
+
+        <section class="carrito-section">
+
+            <h2>🛒 Mi pedido</h2>
+
+            <div id="carrito">
+                <!-- JavaScript va a mostrar los productos del carrito acá -->
+            </div>
+
+            <div class="carrito-resumen">
+
+                <p>
+                    Subtotal:
+                    <span id="subtotal">$0</span>
+                </p>
+
+            </div>
+
+
+            <!-- PROPINA -->
+
+            <div class="propina">
+
+                <h3>¿Deseás agregar propina?</h3>
+
+                <label>
+                    <input type="radio" name="propina" value="0" checked>
+                    Sin propina
+                </label>
+
+                <label>
+                    <input type="radio" name="propina" value="10">
+                    10%
+                </label>
+
+                <label>
+                    <input type="radio" name="propina" value="15">
+                    15%
+                </label>
+
+                <label>
+                    <input type="radio" name="propina" value="20">
+                    20%
+                </label>
+
+            </div>
+
+
+            <!-- TOTAL -->
+
+            <div class="total">
+
+                <p>
+                    Propina:
+                    <span id="monto-propina">$0</span>
+                </p>
+
+                <p>
+                    <strong>Total:</strong>
+                    <strong id="total">$0</strong>
+                </p>
+
+            </div>
+
+
+            <button id="confirmar-compra"> Confirmar compra</button>
+
+            <button id="vaciar-carrito"> Vaciar carrito</button>
+
+            <div id="ticket"></div>
+
+        </section>
+
+        
+
+    </main>
+
+
+
+
 </body>
+
 </html>

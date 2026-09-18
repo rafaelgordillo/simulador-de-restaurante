@@ -1,0 +1,214 @@
+/* =========================
+   ESTILOS GENERALES
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f1ea;
+    color: #333;
+}
+
+.wrapper {
+    width: min(1100px, 90%);
+    margin: 40px auto;
+}
+
+
+/* =========================
+   TITULOS
+========================= */
+
+h1 {
+    text-align: center;
+    margin-bottom: 5px;
+    font-size: 2.5rem;
+}
+
+h2 {
+    color: #444;
+}
+
+.wrapper > h2 {
+    text-align: center;
+    margin-top: 0;
+}
+
+
+/* =========================
+   FORMULARIO
+========================= */
+
+.form-section,
+.search-section,
+.productos-section {
+    background-color: white;
+    padding: 25px;
+    margin-top: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+#formulario-producto {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+#formulario-producto div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    font-size: 1rem;
+}
+
+input:focus {
+    outline: 2px solid #999;
+}
+
+
+/* =========================
+   BOTONES
+========================= */
+
+button {
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+#formulario-producto button {
+    grid-column: 1 / -1;
+}
+
+.btn-vender {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-eliminar {
+    background-color: #d9534f;
+    color: white;
+}
+
+
+/* =========================
+   BUSCADOR
+========================= */
+
+#buscador {
+    width: 100%;
+    margin-top: 5px;
+}
+
+
+/* =========================
+   TARJETAS
+========================= */
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.precio {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.stock-visual {
+    font-weight: bold;
+}
+
+.card button {
+    margin-right: 6px;
+    margin-top: 10px;
+}
+
+
+/* =========================
+   MENSAJES
+========================= */
+
+#mensaje {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-height: 25px;
+    margin-top: 25px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 600px) {
+
+    #formulario-producto {
+        grid-template-columns: 1fr;
+    }
+
+    #formulario-producto button {
+        grid-column: auto;
+    }
+
+    .wrapper {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .form-section,
+    .search-section,
+    .productos-section {
+        padding: 18px;
+    }
+}
+
+.btn-comprar {
+    background-color: #4caf50;
+    color: white;
+}
+
