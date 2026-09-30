@@ -27,7 +27,7 @@ const productos = [
     new Producto(5, "Papas fritas", 4000, "Guarniciones", 60),
     new Producto(6, "Flan", 5000, "Postres", 40),
     new Producto(7, "Milanesa", 10000, "Platos principales", 45),
-    new Producto(8, "Pancho", 7000, "Comida rápida", 35)
+    new Producto(8, "Pancho", 7000, "Comida rápida", 3)
 ];
 
 
@@ -85,6 +85,20 @@ function mostrarMensaje(texto) {
 }
 
 
+// CALCULAR SUBTOTAL
+
+function calcularSubtotal() {
+
+    return carrito.reduce(
+        (acumulador, item) => {
+            return acumulador +
+                (item.producto.precio * item.cantidad);
+        },
+        0
+    );
+}
+
+
 // RENDERIZAR PRODUCTOS
 
 function renderizarProductos(arrayProductos) {
@@ -93,19 +107,46 @@ function renderizarProductos(arrayProductos) {
 
     arrayProductos.forEach((producto) => {
 
+        // Buscamos si este producto ya está en el carrito
+
+        const productoEnCarrito = carrito.find(
+            (item) => item.producto.id === producto.id
+        );
+
+
+        // Cantidad de este producto que ya está en el carrito
+
+        const cantidadEnCarrito =
+            productoEnCarrito
+                ? productoEnCarrito.cantidad
+                : 0;
+
+
+        // Stock que todavía queda disponible para comprar
+
+        const stockDisponible =
+            producto.stock - cantidadEnCarrito;
+
+
         const card = document.createElement("div");
 
         card.className = "card";
 
         card.innerHTML = `
             <h3>${producto.nombre}</h3>
+
             <p class="precio">$${producto.precio}</p>
+
             <p>Categoría: ${producto.categoria}</p>
+
             <p class="stock-visual">
-                Stock disponible: ${producto.stock}
+                Stock disponible: ${stockDisponible}
             </p>
 
-            <button class="btn-comprar">Comprar</button>
+            <button class="btn-comprar"
+                ${stockDisponible === 0 ? "disabled" : ""}>
+                Comprar
+            </button>
 
             <button class="btn-eliminar">Eliminar</button>
         `;
@@ -121,6 +162,27 @@ function renderizarProductos(arrayProductos) {
                 (item) => item.producto.id === producto.id
             );
 
+
+            // Cantidad que ya tenemos en el carrito
+
+            const cantidadEnCarrito =
+                productoEnCarrito
+                    ? productoEnCarrito.cantidad
+                    : 0;
+
+
+            // Control de stock
+
+            if (cantidadEnCarrito >= producto.stock) {
+
+                mostrarMensaje(
+                    `No hay más stock disponible de ${producto.nombre}.`
+                );
+
+                return;
+            }
+
+
             if (productoEnCarrito) {
 
                 productoEnCarrito.cantidad++;
@@ -132,6 +194,32 @@ function renderizarProductos(arrayProductos) {
                     cantidad: 1
                 });
             }
+
+
+            // Actualizamos el stock mostrado en la card
+
+            const stockVisual =
+                card.querySelector(".stock-visual");
+
+
+            const nuevoStockDisponible =
+                producto.stock -
+                (productoEnCarrito
+                    ? productoEnCarrito.cantidad
+                    : 1);
+
+
+            stockVisual.textContent =
+                `Stock disponible: ${nuevoStockDisponible}`;
+
+
+            // Deshabilitamos Comprar cuando llega a cero
+
+            if (nuevoStockDisponible === 0) {
+
+                btnComprar.disabled = true;
+            }
+
 
             renderizarCarrito();
 
@@ -215,17 +303,6 @@ function renderizarCarrito() {
     });
 
 
-    const totalCarrito = carrito.reduce(
-        (acumulador, item) => {
-            return acumulador +
-                (item.producto.precio * item.cantidad);
-        },
-        0
-    );
-
-
-    subtotal.textContent = `$${totalCarrito}`;
-
     calcularTotal();
 }
 
@@ -234,13 +311,7 @@ function renderizarCarrito() {
 
 function calcularTotal() {
 
-    const totalCarrito = carrito.reduce(
-        (acumulador, item) => {
-            return acumulador +
-                (item.producto.precio * item.cantidad);
-        },
-        0
-    );
+    const totalCarrito = calcularSubtotal();
 
 
     const opcionSeleccionada = document.querySelector(
@@ -304,13 +375,7 @@ function finalizarCompra() {
     });
 
 
-    const totalCarrito = carrito.reduce(
-        (acumulador, item) => {
-            return acumulador +
-                (item.producto.precio * item.cantidad);
-        },
-        0
-    );
+    const totalCarrito = calcularSubtotal();
 
 
     const opcionSeleccionada = document.querySelector(
@@ -402,6 +467,8 @@ vaciarCarrito.addEventListener("click", () => {
 
     renderizarCarrito();
 
+    renderizarProductos(productos);
+
     mostrarMensaje(
         "Carrito vaciado correctamente."
     );
@@ -432,17 +499,45 @@ formulario.addEventListener("submit", (event) => {
     event.preventDefault();
 
 
+    const nombre = inputNombre.value.trim();
+
+    const precio = Number(inputPrecio.value);
+
+    const categoria = inputCategoria.value.trim();
+
+    const stock = Number(inputStock.value);
+
+
+    // VALIDACIÓN DE DATOS
+
+    if (
+        nombre === "" ||
+        categoria === "" ||
+        !Number.isFinite(precio) ||
+        precio <= 0 ||
+        !Number.isInteger(stock) ||
+        stock < 0
+    ) {
+
+        mostrarMensaje(
+            "Completá los datos correctamente."
+        );
+
+        return;
+    }
+
+
     const nuevoProducto = new Producto(
 
         ++ultimoId,
 
-        inputNombre.value,
+        nombre,
 
-        Number(inputPrecio.value),
+        precio,
 
-        inputCategoria.value,
+        categoria,
 
-        Number(inputStock.value)
+        stock
 
     );
 
