@@ -8,9 +8,9 @@ class Producto {
         this.stock = stock;
     }
 
-    vender() {
-        if (this.stock > 0) {
-            this.stock--;
+    vender(cantidad = 1) {
+        if (this.stock >= cantidad) {
+            this.stock -= cantidad;
             return true;
         }
 
@@ -19,7 +19,9 @@ class Producto {
 }
 
 
-const productos = [
+// PRODUCTOS INICIALES
+
+const productosIniciales = [
     new Producto(1, "Pizza muzzarella", 18000, "Pizzas", 50),
     new Producto(2, "Hamburguesa simple", 10000, "Hamburguesas", 80),
     new Producto(3, "Ensalada César", 8000, "Ensaladas", 50),
@@ -27,11 +29,38 @@ const productos = [
     new Producto(5, "Papas fritas", 4000, "Guarniciones", 60),
     new Producto(6, "Flan", 5000, "Postres", 40),
     new Producto(7, "Milanesa", 10000, "Platos principales", 45),
-    new Producto(8, "Pancho", 7000, "Comida rápida", 3)
+    new Producto(8, "Pancho", 7000, "Comida rápida", 30)
 ];
 
 
-let ultimoId = productos.length;
+// STORAGE - PRODUCTOS
+
+const productosGuardados = localStorage.getItem("productos");
+
+const productos = productosGuardados
+    ? JSON.parse(productosGuardados).map(
+        ({ id, nombre, precio, categoria, stock }) =>
+            new Producto(id, nombre, precio, categoria, stock)
+    )
+    : [...productosIniciales];
+
+
+// Si es la primera vez que se abre la aplicación,
+// guardamos los productos iniciales.
+
+if (!productosGuardados) {
+    localStorage.setItem(
+        "productos",
+        JSON.stringify(productos)
+    );
+}
+
+
+let ultimoId = productos.reduce(
+    (mayorId, producto) =>
+        producto.id > mayorId ? producto.id : mayorId,
+    0
+);
 
 
 // SELECTORES DEL DOM
@@ -47,30 +76,86 @@ const inputStock = document.getElementById("stock");
 
 const buscador = document.getElementById("buscador");
 
-const contenedorProductos = document.getElementById("contenedor-productos");
+const contenedorProductos =
+    document.getElementById("contenedor-productos");
 
 const mensaje = document.getElementById("mensaje");
 
 
-// CARRITO DE COMPRAS
+// CARRITO
 
-const carrito = [];
+const contenedorCarrito =
+    document.getElementById("carrito");
 
-const contenedorCarrito = document.getElementById("carrito");
+const subtotal =
+    document.getElementById("subtotal");
 
-const subtotal = document.getElementById("subtotal");
+const montoPropina =
+    document.getElementById("monto-propina");
 
-const montoPropina = document.getElementById("monto-propina");
+const total =
+    document.getElementById("total");
 
-const total = document.getElementById("total");
+const confirmarCompra =
+    document.getElementById("confirmar-compra");
 
-const confirmarCompra = document.getElementById("confirmar-compra");
+const vaciarCarrito =
+    document.getElementById("vaciar-carrito");
 
-const vaciarCarrito = document.getElementById("vaciar-carrito");
+const opcionesPropina =
+    document.querySelectorAll(
+        'input[name="propina"]'
+    );
 
-const opcionesPropina = document.querySelectorAll(
-    'input[name="propina"]'
-);
+
+// STORAGE - CARRITO
+
+const carritoGuardado =
+    JSON.parse(
+        localStorage.getItem("carrito") ?? "[]"
+    );
+
+
+// El carrito guarda solamente el id del producto
+// y la cantidad seleccionada.
+
+const carrito = carritoGuardado
+    .map(({ productoId, cantidad }) => ({
+        productoId,
+        cantidad
+    }))
+    .filter((item) =>
+        productos.some(
+            (producto) => producto.id === item.productoId
+        )
+    );
+
+
+// FUNCIONES DE STORAGE
+
+function guardarProductos() {
+
+    localStorage.setItem(
+        "productos",
+        JSON.stringify(productos)
+    );
+}
+
+
+function guardarCarrito() {
+
+    const carritoParaGuardar = carrito.map(
+        ({ productoId, cantidad }) => ({
+            productoId,
+            cantidad
+        })
+    );
+
+    localStorage.setItem(
+        "carrito",
+        JSON.stringify(carritoParaGuardar)
+    );
+}
 
 
 // MENSAJES
@@ -91,8 +176,14 @@ function calcularSubtotal() {
 
     return carrito.reduce(
         (acumulador, item) => {
+
+            const producto = productos.find(
+                (producto) =>
+                    producto.id === item.productoId
+            );
+
             return acumulador +
-                (item.producto.precio * item.cantidad);
+                ((producto?.precio ?? 0) * item.cantidad);
         },
         0
     );
@@ -110,19 +201,18 @@ function renderizarProductos(arrayProductos) {
         // Buscamos si este producto ya está en el carrito
 
         const productoEnCarrito = carrito.find(
-            (item) => item.producto.id === producto.id
+            (item) =>
+                item.productoId === producto.id
         );
 
 
-        // Cantidad de este producto que ya está en el carrito
+        // Destructuring del objeto carrito
 
-        const cantidadEnCarrito =
-            productoEnCarrito
-                ? productoEnCarrito.cantidad
-                : 0;
+        const { cantidad: cantidadEnCarrito = 0 } =
+            productoEnCarrito ?? {};
 
 
-        // Stock que todavía queda disponible para comprar
+        // Stock disponible
 
         const stockDisponible =
             producto.stock - cantidadEnCarrito;
@@ -148,27 +238,27 @@ function renderizarProductos(arrayProductos) {
                 Comprar
             </button>
 
-            <button class="btn-eliminar">Eliminar</button>
+            <button class="btn-eliminar">
+                Eliminar
+            </button>
         `;
 
 
         // BOTÓN COMPRAR
 
-        const btnComprar = card.querySelector(".btn-comprar");
+        const btnComprar =
+            card.querySelector(".btn-comprar");
 
         btnComprar.addEventListener("click", () => {
 
             const productoEnCarrito = carrito.find(
-                (item) => item.producto.id === producto.id
+                (item) =>
+                    item.productoId === producto.id
             );
 
 
-            // Cantidad que ya tenemos en el carrito
-
             const cantidadEnCarrito =
-                productoEnCarrito
-                    ? productoEnCarrito.cantidad
-                    : 0;
+                productoEnCarrito?.cantidad ?? 0;
 
 
             // Control de stock
@@ -190,38 +280,18 @@ function renderizarProductos(arrayProductos) {
             } else {
 
                 carrito.push({
-                    producto: producto,
+                    productoId: producto.id,
                     cantidad: 1
                 });
             }
 
 
-            // Actualizamos el stock mostrado en la card
-
-            const stockVisual =
-                card.querySelector(".stock-visual");
-
-
-            const nuevoStockDisponible =
-                producto.stock -
-                (productoEnCarrito
-                    ? productoEnCarrito.cantidad
-                    : 1);
-
-
-            stockVisual.textContent =
-                `Stock disponible: ${nuevoStockDisponible}`;
-
-
-            // Deshabilitamos Comprar cuando llega a cero
-
-            if (nuevoStockDisponible === 0) {
-
-                btnComprar.disabled = true;
-            }
-
+            guardarCarrito();
 
             renderizarCarrito();
+
+            renderizarProductos(productos);
+
 
             mostrarMensaje(
                 `${producto.nombre} agregado al carrito.`
@@ -231,26 +301,61 @@ function renderizarProductos(arrayProductos) {
 
         // BOTÓN ELIMINAR
 
-        const btnEliminar = card.querySelector(".btn-eliminar");
+        const btnEliminar =
+            card.querySelector(".btn-eliminar");
 
         btnEliminar.addEventListener("click", () => {
 
-            const indiceProducto = productos.findIndex(
-                (item) => item.id === producto.id
-            );
+            const indiceProducto =
+                productos.findIndex(
+                    (item) =>
+                        item.id === producto.id
+                );
 
-            productos.splice(indiceProducto, 1);
+
+            if (indiceProducto !== -1) {
+
+                productos.splice(
+                    indiceProducto,
+                    1
+                );
+            }
+
+
+            // Si el producto estaba en el carrito,
+            // también lo eliminamos del carrito.
+
+            const indiceCarrito =
+                carrito.findIndex(
+                    (item) =>
+                        item.productoId === producto.id
+                );
+
+
+            if (indiceCarrito !== -1) {
+
+                carrito.splice(
+                    indiceCarrito,
+                    1
+                );
+            }
+
+
+            guardarProductos();
+
+            guardarCarrito();
 
             mostrarMensaje(
                 "Producto eliminado correctamente."
             );
 
             renderizarProductos(productos);
+
+            renderizarCarrito();
         });
 
 
         contenedorProductos.append(card);
-
     });
 }
 
@@ -260,6 +365,7 @@ function renderizarProductos(arrayProductos) {
 function renderizarCarrito() {
 
     contenedorCarrito.innerHTML = "";
+
 
     if (carrito.length === 0) {
 
@@ -277,29 +383,48 @@ function renderizarCarrito() {
     }
 
 
-    carrito.forEach((item) => {
+    carrito.forEach(({ productoId, cantidad }) => {
 
-        const productoCarrito = document.createElement("div");
+        const producto = productos.find(
+            (producto) =>
+                producto.id === productoId
+        );
 
-        productoCarrito.className = "item-carrito";
+
+        // Si el producto ya no existe, no lo mostramos.
+
+        if (!producto) {
+            return;
+        }
+
+
+        const productoCarrito =
+            document.createElement("div");
+
+        productoCarrito.className =
+            "item-carrito";
+
 
         productoCarrito.innerHTML = `
-            <h3>${item.producto.nombre}</h3>
+            <h3>${producto.nombre}</h3>
 
             <p>
-                Cantidad: ${item.cantidad}
+                Cantidad: ${cantidad}
             </p>
 
             <p>
-                Precio unitario: $${item.producto.precio}
+                Precio unitario: $${producto.precio}
             </p>
 
             <p>
-                Total: $${item.producto.precio * item.cantidad}
+                Total: $${producto.precio * cantidad}
             </p>
         `;
 
-        contenedorCarrito.append(productoCarrito);
+
+        contenedorCarrito.append(
+            productoCarrito
+        );
     });
 
 
@@ -311,32 +436,41 @@ function renderizarCarrito() {
 
 function calcularTotal() {
 
-    const totalCarrito = calcularSubtotal();
+    const totalCarrito =
+        calcularSubtotal();
 
 
-    const opcionSeleccionada = document.querySelector(
-        'input[name="propina"]:checked'
-    );
+    const opcionSeleccionada =
+        document.querySelector(
+            'input[name="propina"]:checked'
+        );
 
 
-    const porcentajePropina = Number(
-        opcionSeleccionada.value
-    );
+    const porcentajePropina =
+        Number(
+            opcionSeleccionada?.value ?? 0
+        );
 
 
     const valorPropina =
-        totalCarrito * porcentajePropina / 100;
+        totalCarrito *
+        porcentajePropina /
+        100;
 
 
     const totalFinal =
-        totalCarrito + valorPropina;
+        totalCarrito +
+        valorPropina;
 
 
-    subtotal.textContent = `$${totalCarrito}`;
+    subtotal.textContent =
+        `$${totalCarrito}`;
 
-    montoPropina.textContent = `$${valorPropina}`;
+    montoPropina.textContent =
+        `$${valorPropina}`;
 
-    total.textContent = `$${totalFinal}`;
+    total.textContent =
+        `$${totalFinal}`;
 }
 
 
@@ -359,65 +493,93 @@ function finalizarCompra() {
 
     if (carrito.length === 0) {
 
-        mostrarMensaje("El carrito está vacío.");
+        mostrarMensaje(
+            "El carrito está vacío."
+        );
 
         return;
     }
 
 
-    carrito.forEach((item) => {
+    // Descontamos del stock real
+    // la cantidad comprada.
 
-        for (let i = 0; i < item.cantidad; i++) {
+    carrito.forEach(
+        ({ productoId, cantidad }) => {
 
-            item.producto.vender();
+            const producto = productos.find(
+                (producto) =>
+                    producto.id === productoId
+            );
+
+
+            if (producto) {
+
+                producto.vender(cantidad);
+            }
         }
-
-    });
-
-
-    const totalCarrito = calcularSubtotal();
-
-
-    const opcionSeleccionada = document.querySelector(
-        'input[name="propina"]:checked'
     );
 
 
+    const totalCarrito =
+        calcularSubtotal();
+
+
+    const opcionSeleccionada =
+        document.querySelector(
+            'input[name="propina"]:checked'
+        );
+
+
     const porcentajePropina =
-        Number(opcionSeleccionada.value);
+        Number(
+            opcionSeleccionada?.value ?? 0
+        );
 
 
     const valorPropina =
-        totalCarrito * porcentajePropina / 100;
+        totalCarrito *
+        porcentajePropina /
+        100;
 
 
     const totalFinal =
-        totalCarrito + valorPropina;
+        totalCarrito +
+        valorPropina;
 
 
     ticket.innerHTML = `
 
         <h2>🧾 Ticket de compra</h2>
 
-        ${carrito.map((item) => `
+        ${carrito.map(
+            ({ productoId, cantidad }) => {
 
-            <div>
+                const producto =
+                    productos.find(
+                        (producto) =>
+                            producto.id === productoId
+                    );
 
-                <p>
-                    <strong>
-                        ${item.producto.nombre}
-                    </strong>
+                return `
+                    <div>
 
-                    x${item.cantidad}
-                </p>
+                        <p>
+                            <strong>
+                                ${producto?.nombre ?? "Producto"}
+                            </strong>
 
-                <p>
-                    $${item.producto.precio * item.cantidad}
-                </p>
+                            x${cantidad}
+                        </p>
 
-            </div>
+                        <p>
+                            $${(producto?.precio ?? 0) * cantidad}
+                        </p>
 
-        `).join("")}
+                    </div>
+                `;
+            }
+        ).join("")}
 
         <hr>
 
@@ -442,7 +604,16 @@ function finalizarCompra() {
     `;
 
 
+    // Vaciamos el carrito
+
     carrito.length = 0;
+
+
+    // Persistimos ambos cambios
+
+    guardarProductos();
+
+    guardarCarrito();
 
 
     renderizarCarrito();
@@ -465,6 +636,8 @@ vaciarCarrito.addEventListener("click", () => {
 
     carrito.length = 0;
 
+    guardarCarrito();
+
     renderizarCarrito();
 
     renderizarProductos(productos);
@@ -472,17 +645,132 @@ vaciarCarrito.addEventListener("click", () => {
     mostrarMensaje(
         "Carrito vaciado correctamente."
     );
-
 });
 
 
 // BOTÓN CONFIRMAR COMPRA
 
-confirmarCompra.addEventListener("click", () => {
+confirmarCompra.addEventListener(
+    "click",
+    () => {
 
-    finalizarCompra();
+        finalizarCompra();
 
-});
+    }
+);
+
+
+// FORMULARIO AGREGAR PRODUCTO
+
+formulario.addEventListener(
+    "submit",
+    (event) => {
+
+        event.preventDefault();
+
+
+        const nombre =
+            inputNombre.value.trim();
+
+        const precio =
+            Number(inputPrecio.value);
+
+        const categoria =
+            inputCategoria.value.trim();
+
+        const stock =
+            Number(inputStock.value);
+
+
+        // VALIDACIÓN
+
+        if (
+            nombre === "" ||
+            categoria === "" ||
+            !Number.isFinite(precio) ||
+            precio <= 0 ||
+            !Number.isInteger(stock) ||
+            stock < 0
+        ) {
+
+            mostrarMensaje(
+                "Completá los datos correctamente."
+            );
+
+            return;
+        }
+
+
+        const nuevoProducto =
+            new Producto(
+
+                ++ultimoId,
+
+                nombre,
+
+                precio,
+
+                categoria,
+
+                stock
+
+            );
+
+
+        productos.push(
+            nuevoProducto
+        );
+
+
+        // Guardamos el nuevo producto
+
+        guardarProductos();
+
+
+        renderizarProductos(
+            productos
+        );
+
+
+        formulario.reset();
+
+
+        mostrarMensaje(
+            "Producto agregado correctamente."
+        );
+    }
+);
+
+
+// BUSCADOR
+
+buscador.addEventListener(
+    "input",
+    () => {
+
+        const textoBuscado =
+            buscador.value
+                .toLowerCase()
+                .trim();
+
+
+        const productosFiltrados =
+            productos.filter(
+                (producto) => {
+
+                    return producto.nombre
+                        .toLowerCase()
+                        .includes(textoBuscado);
+
+                }
+            );
+
+
+        renderizarProductos(
+            productosFiltrados
+        );
+    }
+);
 
 
 // RENDERIZADO INICIAL
@@ -490,92 +778,3 @@ confirmarCompra.addEventListener("click", () => {
 renderizarProductos(productos);
 
 renderizarCarrito();
-
-
-// FORMULARIO AGREGAR PRODUCTO
-
-formulario.addEventListener("submit", (event) => {
-
-    event.preventDefault();
-
-
-    const nombre = inputNombre.value.trim();
-
-    const precio = Number(inputPrecio.value);
-
-    const categoria = inputCategoria.value.trim();
-
-    const stock = Number(inputStock.value);
-
-
-    // VALIDACIÓN DE DATOS
-
-    if (
-        nombre === "" ||
-        categoria === "" ||
-        !Number.isFinite(precio) ||
-        precio <= 0 ||
-        !Number.isInteger(stock) ||
-        stock < 0
-    ) {
-
-        mostrarMensaje(
-            "Completá los datos correctamente."
-        );
-
-        return;
-    }
-
-
-    const nuevoProducto = new Producto(
-
-        ++ultimoId,
-
-        nombre,
-
-        precio,
-
-        categoria,
-
-        stock
-
-    );
-
-
-    productos.push(nuevoProducto);
-
-
-    renderizarProductos(productos);
-
-
-    formulario.reset();
-
-
-    mostrarMensaje(
-        "Producto agregado correctamente."
-    );
-
-});
-
-
-// BUSCADOR
-
-buscador.addEventListener("input", () => {
-
-    const textoBuscado =
-        buscador.value.toLowerCase().trim();
-
-
-    const productosFiltrados =
-        productos.filter((producto) => {
-
-            return producto.nombre
-                .toLowerCase()
-                .includes(textoBuscado);
-
-        });
-
-
-    renderizarProductos(productosFiltrados);
-
-});
