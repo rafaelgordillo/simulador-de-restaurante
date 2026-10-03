@@ -661,6 +661,13 @@ input[name="propina"] + label {
     margin-top: 15px;
 }
 
-
+.mensaje-bienvenida {
+    text-align: center;
+    padding: 12px 16px;
+    margin: 16px auto;
+    max-width: 700px;
+    border-radius: 8px;
+    font-weight: bold;
+}
 
 
