@@ -1,0 +1,58 @@
+[
+    {
+        "id": 1,
+        "nombre": "Pizza muzzarella",
+        "precio": 18000,
+        "categoria": "Pizzas",
+        "stock": 50
+    },
+    {
+        "id": 2,
+        "nombre": "Hamburguesa simple",
+        "precio": 10000,
+        "categoria": "Hamburguesas",
+        "stock": 80
+    },
+    {
+        "id": 3,
+        "nombre": "Ensalada César",
+        "precio": 8000,
+        "categoria": "Ensaladas",
+        "stock": 50
+    },
+    {
+        "id": 4,
+        "nombre": "Gaseosa",
+        "precio": 4000,
+        "categoria": "Gaseosas",
+        "stock": 100
+    },
+    {
+        "id": 5,
+        "nombre": "Papas fritas",
+        "precio": 4000,
+        "categoria": "Guarniciones",
+        "stock": 60
+    },
+    {
+        "id": 6,
+        "nombre": "Flan",
+        "precio": 5000,
+        "categoria": "Postres",
+        "stock": 40
+    },
+    {
+        "id": 7,
+        "nombre": "Milanesa",
+        "precio": 10000,
+        "categoria": "Platos principales",
+        "stock": 45
+    },
+    {
+        "id": 8,
+        "nombre": "Pancho",
+        "precio": 7000,
+        "categoria": "Comida rápida",
+        "stock": 30
+    }
+]

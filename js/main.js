@@ -1,5 +1,6 @@
 
 
+
 class Producto {
     constructor(id, nombre, precio, categoria, stock) {
         this.id = id;
@@ -36,80 +37,10 @@ const productosIniciales = [
 ];
 
 
-// FUNCIONES DE STORAGE - PRODUCTOS
-
-// Recuperamos los productos guardados en localStorage.
-// JSON.parse() puede generar un error si los datos almacenados
-// no tienen un formato JSON válido, por eso esta función
-// se ejecutará dentro de un bloque try-catch.
-
-function cargarProductos() {
-
-    const productosGuardados =
-        localStorage.getItem("productos");
-
-    // Si existen productos guardados, los convertimos
-    // nuevamente en instancias de la clase Producto.
-    // Si no existen, utilizamos los productos iniciales.
-
-    return productosGuardados
-        ? JSON.parse(productosGuardados).map(
-            ({ id, nombre, precio, categoria, stock }) =>
-                new Producto(
-                    id,
-                    nombre,
-                    precio,
-                    categoria,
-                    stock
-                )
-        )
-        : [...productosIniciales];
-}
-
-
-// Intentamos cargar los productos almacenados.
-// Si JSON.parse() encuentra datos inválidos, el catch
-// permite recuperar el funcionamiento utilizando
-// nuevamente los productos iniciales.
-
-let productos;
-
-try {
-
-    productos = cargarProductos();
-
-} catch (error) {
-
-    // Si ocurre un error al recuperar los productos,
-    // evitamos que la aplicación deje de funcionar.
-
-    productos = [...productosIniciales];
-
-} finally {
-
-    // El finally se ejecuta siempre, haya ocurrido un error
-    // o no. En este caso nos aseguramos de que exista
-    // información válida de productos en localStorage.
-
-    localStorage.setItem(
-        "productos",
-        JSON.stringify(productos)
-    );
-}
-
-
-// ÚLTIMO ID
-
-let ultimoId = productos.reduce(
-    (mayorId, producto) =>
-        producto.id > mayorId ? producto.id : mayorId,
-    0
-);
-
-
 // SELECTORES DEL DOM
 
-const ticket = document.getElementById("ticket");
+const ticket =
+    document.getElementById("ticket");
 
 const formulario =
     document.getElementById("formulario-producto");
@@ -162,11 +93,35 @@ const opcionesPropina =
     );
 
 
-// STORAGE - CARRITO
+// VARIABLES PRINCIPALES
 
-// Recuperamos el carrito guardado.
-// El operador ?? permite utilizar un array vacío
-// cuando no existe información almacenada.
+let productos = [];
+let ultimoId = 0;
+
+
+// STORAGE - PRODUCTOS
+
+function cargarProductos() {
+
+    const productosGuardados =
+        localStorage.getItem("productos");
+
+    return productosGuardados
+        ? JSON.parse(productosGuardados).map(
+            ({ id, nombre, precio, categoria, stock }) =>
+                new Producto(
+                    id,
+                    nombre,
+                    precio,
+                    categoria,
+                    stock
+                )
+        )
+        : null;
+}
+
+
+// STORAGE - CARRITO
 
 const carritoGuardado =
     JSON.parse(
@@ -174,28 +129,16 @@ const carritoGuardado =
     );
 
 
-// El carrito guarda solamente el id del producto
-// y la cantidad seleccionada.
-
 const carrito = carritoGuardado
     .map(({ productoId, cantidad }) => ({
         productoId,
         cantidad
-    }))
-    .filter((item) =>
-        productos.some(
-            (producto) =>
-                producto.id === item.productoId
-        )
-    );
+    }));
 
 
 // FUNCIONES DE STORAGE
 
 function guardarProductos() {
-
-    // Convertimos el array de objetos a JSON
-    // para poder almacenarlo en localStorage.
 
     localStorage.setItem(
         "productos",
@@ -206,15 +149,13 @@ function guardarProductos() {
 
 function guardarCarrito() {
 
-    // Guardamos únicamente los datos necesarios
-    // para reconstruir el carrito posteriormente.
-
-    const carritoParaGuardar = carrito.map(
-        ({ productoId, cantidad }) => ({
-            productoId,
-            cantidad
-        })
-    );
+    const carritoParaGuardar =
+        carrito.map(
+            ({ productoId, cantidad }) => ({
+                productoId,
+                cantidad
+            })
+        );
 
     localStorage.setItem(
         "carrito",
@@ -223,36 +164,256 @@ function guardarCarrito() {
 }
 
 
-// MENSAJES
+// NOTIFICACIONES CON TOASTIFY
 
-function mostrarMensaje(texto) {
+function mostrarMensaje(texto, tipo = "info") {
 
-    mensaje.textContent = texto;
+    if (typeof Toastify !== "function") {
 
-    // setTimeout() permite ejecutar este código
-    // de manera asincrónica después de 2,5 segundos.
-    // De esta forma el mensaje desaparece automáticamente.
+        mensaje.textContent = texto;
 
-    setTimeout(() => {
-        mensaje.textContent = "";
-    }, 2500);
+        setTimeout(() => {
+            mensaje.textContent = "";
+        }, 2500);
+
+        return;
+    }
+
+
+    const configuracion = {
+        text: texto,
+        duration: 2500,
+        close: true,
+        gravity: "top",
+        position: "right"
+    };
+
+
+    if (tipo === "error") {
+        configuracion.className = "toast-error";
+    }
+
+
+    if (tipo === "success") {
+        configuracion.className = "toast-success";
+    }
+
+
+    Toastify(configuracion).showToast();
 }
 
 
-// TEMPORIZADOR DE BIENVENIDA
+// FEEDBACK DE CARGA
 
-// Esperamos unos segundos después de cargar el simulador
-// para mostrar información complementaria al usuario.
-// El setTimeout() genera aquí un comportamiento asincrónico.
+let toastCarga = null;
 
-setTimeout(() => {
 
-    mostrarMensaje(
-        "🍕 Elegí y disfrutá los mejores platos de comida rápida en El Oasis."
-    );
+function mostrarCarga() {
 
-}, 4000);
+    if (typeof Toastify !== "function") {
 
+        mensaje.textContent =
+            "Cargando productos...";
+
+        return;
+    }
+
+
+    toastCarga = Toastify({
+        text: "⏳ Cargando menú...",
+        duration: -1,
+        close: false,
+        gravity: "top",
+        position: "right"
+    });
+
+
+    toastCarga.showToast();
+}
+
+
+function finalizarCarga() {
+
+    if (toastCarga) {
+
+        toastCarga.hideToast();
+
+        toastCarga = null;
+    }
+
+
+    mensaje.textContent = "";
+}
+
+
+// FETCH - CARGAR PRODUCTOS DESDE DATA.JSON
+
+async function obtenerProductos() {
+
+    mostrarCarga();
+
+
+    try {
+
+        const respuesta =
+            await fetch("./data.json");
+
+
+        // Verificamos que la respuesta HTTP
+        // haya sido exitosa.
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                `Error HTTP: ${respuesta.status}`
+            );
+        }
+
+
+        const datos =
+            await respuesta.json();
+
+
+        // Convertimos los objetos recibidos por fetch
+        // en instancias de la clase Producto.
+
+        const productosDesdeJSON =
+            datos.map(
+                ({
+                    id,
+                    nombre,
+                    precio,
+                    categoria,
+                    stock
+                }) =>
+                    new Producto(
+                        id,
+                        nombre,
+                        precio,
+                        categoria,
+                        stock
+                    )
+            );
+
+
+        // Si ya existe información guardada por el usuario,
+        // la conservamos.
+
+        const productosGuardados =
+            cargarProductos();
+
+
+        productos =
+            productosGuardados ??
+            productosDesdeJSON;
+
+
+        ultimoId =
+            productos.reduce(
+                (mayorId, producto) =>
+                    producto.id > mayorId
+                        ? producto.id
+                        : mayorId,
+                0
+            );
+
+
+        // Si no existía localStorage,
+        // guardamos los datos recibidos desde JSON.
+
+        if (!productosGuardados) {
+            guardarProductos();
+        }
+
+
+        mostrarMensaje(
+            "✅ Menú cargado correctamente.",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Error al cargar productos:",
+            error
+        );
+
+
+        // Si fetch falla pero existe información local,
+        // utilizamos los datos guardados.
+
+        const productosGuardados =
+            cargarProductos();
+
+
+        if (productosGuardados) {
+
+            productos =
+                productosGuardados;
+
+
+            ultimoId =
+                productos.reduce(
+                    (mayorId, producto) =>
+                        producto.id > mayorId
+                            ? producto.id
+                            : mayorId,
+                    0
+                );
+
+
+            mostrarMensaje(
+                "⚠️ No se pudo cargar el menú. Se utilizaron los datos guardados.",
+                "error"
+            );
+
+
+        } else {
+
+            // Último respaldo:
+            // utilizamos los productos iniciales.
+
+            productos =
+                [...productosIniciales];
+
+
+            ultimoId =
+                productos.reduce(
+                    (mayorId, producto) =>
+                        producto.id > mayorId
+                            ? producto.id
+                            : mayorId,
+                    0
+                );
+
+
+            guardarProductos();
+
+
+            mostrarMensaje(
+                "⚠️ No se pudo cargar el menú. Se utilizaron los datos iniciales.",
+                "error"
+            );
+        }
+
+
+    } finally {
+
+        // finally se ejecuta siempre,
+        // haya ocurrido un error o no.
+
+        finalizarCarga();
+
+
+        renderizarProductos(
+            productos
+        );
+
+
+        renderizarCarrito();
+    }
+}
 
 
 // CALCULAR SUBTOTAL
@@ -262,16 +423,18 @@ function calcularSubtotal() {
     return carrito.reduce(
         (acumulador, item) => {
 
-            const producto = productos.find(
-                (producto) =>
-                    producto.id === item.productoId
-            );
+            const producto =
+                productos.find(
+                    (producto) =>
+                        producto.id === item.productoId
+                );
 
-            // El operador ?. evita un error si el producto
-            // no existe y ?? utiliza 0 como valor alternativo.
 
             return acumulador +
-                ((producto?.precio ?? 0) * item.cantidad);
+                (
+                    (producto?.precio ?? 0) *
+                    item.cantidad
+                );
         },
         0
     );
@@ -280,175 +443,207 @@ function calcularSubtotal() {
 
 // RENDERIZAR PRODUCTOS
 
-function renderizarProductos(arrayProductos) {
+function renderizarProductos(
+    arrayProductos
+) {
 
     contenedorProductos.innerHTML = "";
 
-    arrayProductos.forEach((producto) => {
 
-        // Buscamos si el producto ya está en el carrito.
+    arrayProductos.forEach(
+        (producto) => {
 
-        const productoEnCarrito = carrito.find(
-            (item) =>
-                item.productoId === producto.id
-        );
+            // Buscamos si el producto
+            // ya está en el carrito.
 
-
-        // Destructuring del objeto carrito.
-        // Si el producto todavía no está en el carrito,
-        // utilizamos 0 como cantidad predeterminada.
-
-        const { cantidad: cantidadEnCarrito = 0 } =
-            productoEnCarrito ?? {};
-
-
-        // Calculamos el stock disponible teniendo en cuenta
-        // las unidades que el usuario ya agregó al carrito.
-
-        const stockDisponible =
-            producto.stock - cantidadEnCarrito;
-
-
-        const card = document.createElement("div");
-
-        card.className = "card";
-
-        card.innerHTML = `
-            <h3>${producto.nombre}</h3>
-
-            <p class="precio">$${producto.precio}</p>
-
-            <p>Categoría: ${producto.categoria}</p>
-
-            <p class="stock-visual">
-                Stock disponible: ${stockDisponible}
-            </p>
-
-            <button class="btn-comprar"
-                ${stockDisponible === 0 ? "disabled" : ""}>
-                Comprar
-            </button>
-
-            <button class="btn-eliminar">
-                Eliminar
-            </button>
-        `;
-
-
-        // BOTÓN COMPRAR
-
-        const btnComprar =
-            card.querySelector(".btn-comprar");
-
-        btnComprar.addEventListener("click", () => {
-
-            const productoEnCarrito = carrito.find(
-                (item) =>
-                    item.productoId === producto.id
-            );
-
-
-            // Si existe el producto en el carrito,
-            // obtenemos su cantidad; si no existe,
-            // utilizamos 0.
-
-            const cantidadEnCarrito =
-                productoEnCarrito?.cantidad ?? 0;
-
-
-            // Controlamos que no se pueda agregar
-            // una cantidad superior al stock disponible.
-
-            if (cantidadEnCarrito >= producto.stock) {
-
-                mostrarMensaje(
-                    `No hay más stock disponible de ${producto.nombre}.`
-                );
-
-                return;
-            }
-
-
-            // Si el producto ya está en el carrito,
-            // aumentamos su cantidad.
-            // Si no existe, agregamos un nuevo objeto.
-
-            productoEnCarrito
-                ? productoEnCarrito.cantidad++
-                : carrito.push({
-                    productoId: producto.id,
-                    cantidad: 1
-                });
-
-
-            guardarCarrito();
-
-            renderizarCarrito();
-
-            renderizarProductos(productos);
-
-
-            mostrarMensaje(
-                `${producto.nombre} agregado al carrito.`
-            );
-        });
-
-
-        // BOTÓN ELIMINAR
-
-        const btnEliminar =
-            card.querySelector(".btn-eliminar");
-
-        btnEliminar.addEventListener("click", () => {
-
-            const indiceProducto =
-                productos.findIndex(
-                    (item) =>
-                        item.id === producto.id
-                );
-
-
-            // Si encontramos el producto, lo eliminamos
-            // del array principal.
-
-            if (indiceProducto !== -1) {
-
-                productos.splice(
-                    indiceProducto,
-                    1
-                );
-            }
-
-
-            // Si el producto estaba en el carrito,
-            // también lo eliminamos de allí.
-
-            const indiceCarrito =
-                carrito.findIndex(
+            const productoEnCarrito =
+                carrito.find(
                     (item) =>
                         item.productoId === producto.id
                 );
 
 
-            // El operador ternario permite realizar
-            // una acción sencilla dependiendo del resultado.
+            const {
+                cantidad: cantidadEnCarrito = 0
+            } =
+                productoEnCarrito ?? {};
 
-            indiceCarrito !== -1 ? carrito.splice(indiceCarrito, 1) : null;
+
+            const stockDisponible =
+                producto.stock -
+                cantidadEnCarrito;
 
 
-            guardarProductos();
+            const card =
+                document.createElement("div");
 
-            guardarCarrito();
 
-            mostrarMensaje("Producto eliminado correctamente." );
+            card.className = "card";
 
-            renderizarProductos(productos);
 
-            renderizarCarrito();
-        });
+            card.innerHTML = `
+                <h3>${producto.nombre}</h3>
 
-        contenedorProductos.append(card);
-    });
+                <p class="precio">
+                    $${producto.precio}
+                </p>
+
+                <p>
+                    Categoría:
+                    ${producto.categoria}
+                </p>
+
+                <p class="stock-visual">
+                    Stock disponible:
+                    ${stockDisponible}
+                </p>
+
+                <button
+                    class="btn-comprar"
+                    ${stockDisponible === 0 ? "disabled" : ""}
+                >
+                    Comprar
+                </button>
+
+                <button class="btn-eliminar">
+                    Eliminar
+                </button>
+            `;
+
+
+            // BOTÓN COMPRAR
+
+            const btnComprar =
+                card.querySelector(
+                    ".btn-comprar"
+                );
+
+
+            btnComprar.addEventListener(
+                "click",
+                () => {
+
+                    const productoEnCarrito =
+                        carrito.find(
+                            (item) =>
+                                item.productoId === producto.id
+                        );
+
+
+                    const cantidadEnCarrito =
+                        productoEnCarrito?.cantidad ?? 0;
+
+
+                    if (
+                        cantidadEnCarrito >=
+                        producto.stock
+                    ) {
+
+                        mostrarMensaje(
+                            `No hay más stock disponible de ${producto.nombre}.`,
+                            "error"
+                        );
+
+                        return;
+                    }
+
+
+                    productoEnCarrito
+                        ? productoEnCarrito.cantidad++
+                        : carrito.push({
+                            productoId: producto.id,
+                            cantidad: 1
+                        });
+
+
+                    guardarCarrito();
+
+                    renderizarCarrito();
+
+                    renderizarProductos(
+                        productos
+                    );
+
+
+                    mostrarMensaje(
+                        `${producto.nombre} agregado al carrito.`,
+                        "success"
+                    );
+                }
+            );
+
+
+            // BOTÓN ELIMINAR
+
+            const btnEliminar =
+                card.querySelector(
+                    ".btn-eliminar"
+                );
+
+
+            btnEliminar.addEventListener(
+                "click",
+                () => {
+
+                    const indiceProducto =
+                        productos.findIndex(
+                            (item) =>
+                                item.id === producto.id
+                        );
+
+
+                    if (
+                        indiceProducto !== -1
+                    ) {
+
+                        productos.splice(
+                            indiceProducto,
+                            1
+                        );
+                    }
+
+
+                    const indiceCarrito =
+                        carrito.findIndex(
+                            (item) =>
+                                item.productoId ===
+                                producto.id
+                        );
+
+
+                    indiceCarrito !== -1
+                        ? carrito.splice(
+                            indiceCarrito,
+                            1
+                        )
+                        : null;
+
+
+                    guardarProductos();
+
+                    guardarCarrito();
+
+
+                    mostrarMensaje(
+                        "Producto eliminado correctamente.",
+                        "success"
+                    );
+
+
+                    renderizarProductos(
+                        productos
+                    );
+
+                    renderizarCarrito();
+                }
+            );
+
+
+            contenedorProductos.append(
+                card
+            );
+        }
+    );
 }
 
 
@@ -459,14 +654,14 @@ function renderizarCarrito() {
     contenedorCarrito.innerHTML = "";
 
 
-    // Si el carrito está vacío mostramos un mensaje
-    // y reiniciamos los valores de los totales.
-
     if (carrito.length === 0) {
 
         contenedorCarrito.innerHTML = `
-            <p>El carrito está vacío.</p>
+            <p>
+                El carrito está vacío.
+            </p>
         `;
+
 
         subtotal.textContent = "$0";
 
@@ -478,50 +673,55 @@ function renderizarCarrito() {
     }
 
 
-    carrito.forEach(({ productoId, cantidad }) => {
+    carrito.forEach(
+        ({ productoId, cantidad }) => {
 
-        const producto = productos.find(
-            (producto) =>
-                producto.id === productoId
-        );
+            const producto =
+                productos.find(
+                    (producto) =>
+                        producto.id === productoId
+                );
 
 
-        // Si el producto ya no existe, no lo mostramos
-        // dentro del carrito.
+            if (!producto) {
+                return;
+            }
 
-        if (!producto) {
-            return;
+
+            const productoCarrito =
+                document.createElement("div");
+
+
+            productoCarrito.className =
+                "item-carrito";
+
+
+            productoCarrito.innerHTML = `
+                <h3>
+                    ${producto.nombre}
+                </h3>
+
+                <p>
+                    Cantidad: ${cantidad}
+                </p>
+
+                <p>
+                    Precio unitario:
+                    $${producto.precio}
+                </p>
+
+                <p>
+                    Total:
+                    $${producto.precio * cantidad}
+                </p>
+            `;
+
+
+            contenedorCarrito.append(
+                productoCarrito
+            );
         }
-
-
-        const productoCarrito =
-            document.createElement("div");
-
-        productoCarrito.className =
-            "item-carrito";
-
-
-        productoCarrito.innerHTML = `
-            <h3>${producto.nombre}</h3>
-
-            <p>
-                Cantidad: ${cantidad}
-            </p>
-
-            <p>
-                Precio unitario: $${producto.precio}
-            </p>
-
-            <p>
-                Total: $${producto.precio * cantidad}
-            </p>
-        `;
-
-
-        contenedorCarrito.append(
-            productoCarrito
-        );
-    });
+    );
 
 
     calcularTotal();
@@ -541,9 +741,6 @@ function calcularTotal() {
             'input[name="propina"]:checked'
         );
 
-
-    // Number convierte el valor obtenido del input
-    // en un número para poder realizar operaciones.
 
     const porcentajePropina =
         Number(
@@ -565,8 +762,10 @@ function calcularTotal() {
     subtotal.textContent =
         `$${totalCarrito}`;
 
+
     montoPropina.textContent =
         `$${valorPropina}`;
+
 
     total.textContent =
         `$${totalFinal}`;
@@ -575,15 +774,19 @@ function calcularTotal() {
 
 // EVENTO PROPINA
 
-opcionesPropina.forEach((opcion) => {
+opcionesPropina.forEach(
+    (opcion) => {
 
-    opcion.addEventListener("change", () => {
+        opcion.addEventListener(
+            "change",
+            () => {
 
-        calcularTotal();
+                calcularTotal();
 
-    });
-
-});
+            }
+        );
+    }
+);
 
 
 // FINALIZAR COMPRA
@@ -593,26 +796,26 @@ function finalizarCompra() {
     if (carrito.length === 0) {
 
         mostrarMensaje(
-            "El carrito está vacío."
+            "El carrito está vacío.",
+            "error"
         );
 
         return;
     }
 
 
-    // Descontamos del stock real la cantidad comprada.
+    // Descontamos del stock real
+    // la cantidad comprada.
 
     carrito.forEach(
         ({ productoId, cantidad }) => {
 
-            const producto = productos.find(
-                (producto) =>
-                    producto.id === productoId
-            );
+            const producto =
+                productos.find(
+                    (producto) =>
+                        producto.id === productoId
+                );
 
-
-            // Si encontramos el producto,
-            // ejecutamos su método vender().
 
             producto
                 ? producto.vender(cantidad)
@@ -648,23 +851,25 @@ function finalizarCompra() {
         valorPropina;
 
 
-    // Generamos el ticket dinámicamente
-    // utilizando la información actual del carrito.
+    // Generamos el ticket dinámicamente.
 
     ticket.innerHTML = `
 
-        <h2>🧾 Ticket de compra</h2>
+        <h2>
+            🧾 Ticket de compra
+        </h2>
 
         ${carrito.map(
-        ({ productoId, cantidad }) => {
+            ({ productoId, cantidad }) => {
 
-            const producto =
-                productos.find(
-                    (producto) =>
-                        producto.id === productoId
-                );
+                const producto =
+                    productos.find(
+                        (producto) =>
+                            producto.id === productoId
+                    );
 
-            return `
+
+                return `
                     <div>
 
                         <p>
@@ -681,13 +886,14 @@ function finalizarCompra() {
 
                     </div>
                 `;
-        }
-    ).join("")}
+            }
+        ).join("")}
 
         <hr>
 
         <p>
-            Subtotal: $${totalCarrito}
+            Subtotal:
+            $${totalCarrito}
         </p>
 
         <p>
@@ -697,7 +903,8 @@ function finalizarCompra() {
 
         <p>
             <strong>
-                Total: $${totalFinal}
+                Total:
+                $${totalFinal}
             </strong>
         </p>
 
@@ -707,56 +914,53 @@ function finalizarCompra() {
     `;
 
 
-    // Vaciamos el carrito después de completar la compra.
-
     carrito.length = 0;
 
-
-    // Persistimos los cambios realizados en productos
-    // y carrito mediante localStorage.
 
     guardarProductos();
 
     guardarCarrito();
 
 
-    // Actualizamos nuevamente la interfaz.
-
     renderizarCarrito();
 
-    renderizarProductos(productos);
+    renderizarProductos(
+        productos
+    );
 
-
-    // Restablecemos la opción de propina inicial.
 
     opcionesPropina[0].checked = true;
 
 
     mostrarMensaje(
-        "Compra realizada correctamente."
+        "Compra realizada correctamente.",
+        "success"
     );
 }
 
 
 // BOTÓN VACIAR CARRITO
 
-vaciarCarrito.addEventListener("click", () => {
+vaciarCarrito.addEventListener(
+    "click",
+    () => {
 
-    // Vaciamos el array del carrito y guardamos
-    // el nuevo estado en localStorage.
+        carrito.length = 0;
 
-    carrito.length = 0;
+        guardarCarrito();
 
-    guardarCarrito();
+        renderizarCarrito();
 
-    renderizarCarrito();
+        renderizarProductos(
+            productos
+        );
 
-    renderizarProductos(productos);
-
-    mostrarMensaje(
-        "Carrito vaciado correctamente."
-    );
-});
+        mostrarMensaje(
+            "Carrito vaciado correctamente.",
+            "success"
+        );
+    }
+);
 
 
 // BOTÓN CONFIRMAR COMPRA
@@ -783,22 +987,24 @@ formulario.addEventListener(
         const nombre =
             inputNombre.value.trim();
 
+
         const precio =
-            Number(inputPrecio.value);
+            Number(
+                inputPrecio.value
+            );
+
 
         const categoria =
             inputCategoria.value.trim();
 
+
         const stock =
-            Number(inputStock.value);
+            Number(
+                inputStock.value
+            );
 
 
         // VALIDACIÓN DE DATOS
-
-        // Verificamos que el nombre y la categoría
-        // no estén vacíos, que el precio sea válido
-        // y positivo, y que el stock sea un número entero
-        // igual o mayor a cero.
 
         if (
             nombre === "" ||
@@ -810,29 +1016,21 @@ formulario.addEventListener(
         ) {
 
             mostrarMensaje(
-                "Completá los datos correctamente."
+                "Completá los datos correctamente.",
+                "error"
             );
 
             return;
         }
 
 
-        // Creamos una nueva instancia de Producto
-        // utilizando el próximo ID disponible.
-
         const nuevoProducto =
             new Producto(
-
                 ++ultimoId,
-
                 nombre,
-
                 precio,
-
                 categoria,
-
                 stock
-
             );
 
 
@@ -840,8 +1038,6 @@ formulario.addEventListener(
             nuevoProducto
         );
 
-
-        // Guardamos el nuevo producto en localStorage.
 
         guardarProductos();
 
@@ -855,7 +1051,8 @@ formulario.addEventListener(
 
 
         mostrarMensaje(
-            "Producto agregado correctamente."
+            "Producto agregado correctamente.",
+            "success"
         );
     }
 );
@@ -867,11 +1064,11 @@ buscador.addEventListener(
     "input",
     () => {
 
-        const textoBuscado = buscador.value .toLowerCase() .trim();
+        const textoBuscado =
+            buscador.value
+                .toLowerCase()
+                .trim();
 
-
-        // Filtramos los productos comparando
-        // el texto ingresado con sus nombres.
 
         const productosFiltrados =
             productos.filter(
@@ -894,9 +1091,9 @@ buscador.addEventListener(
 
 // RENDERIZADO INICIAL
 
-// Mostramos los productos y el carrito
-// cuando se carga la aplicación.
+// Obtenemos los productos mediante fetch.
+// La función utiliza async/await,
+// try/catch/finally para manejar
+// correctamente la petición.
 
-renderizarProductos(productos);
-
-renderizarCarrito();
+obtenerProductos();

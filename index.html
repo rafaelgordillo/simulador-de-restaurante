@@ -4,8 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Restaurante El Oasis</title>
+
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- LIBRERÍA TOASTIFY -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <script defer
+        src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     <script defer src="js/main.js"></script>
 </head>
 
@@ -54,9 +64,9 @@
 
             <!-- MENSAJES PARA EL USUARIO -->
 
-          <div id="mensaje-bienvenida" class="mensaje-bienvenida"></div>  
+            <div id="mensaje-bienvenida" class="mensaje-bienvenida"></div>
 
-        <p id="mensaje"></p>
+            <p id="mensaje"></p>
 
         </section>
 
@@ -67,7 +77,11 @@
 
             <h2>Buscar producto</h2>
 
-            <input type="text" id="buscador" placeholder="Escribí el nombre del producto...">
+            <input
+                type="text"
+                id="buscador"
+                placeholder="Escribí el nombre del producto..."
+            >
 
         </section>
 
@@ -84,6 +98,7 @@
 
         </section>
 
+
         <!-- CARRITO DE COMPRAS -->
 
         <section class="carrito-section">
@@ -93,6 +108,7 @@
             <div id="carrito">
                 <!-- JavaScript va a mostrar los productos del carrito acá -->
             </div>
+
 
             <div class="carrito-resumen">
 
@@ -111,22 +127,39 @@
                 <h3>¿Deseás agregar propina?</h3>
 
                 <label>
-                    <input type="radio" name="propina" value="0" checked>
+                    <input
+                        type="radio"
+                        name="propina"
+                        value="0"
+                        checked
+                    >
                     Sin propina
                 </label>
 
                 <label>
-                    <input type="radio" name="propina" value="10">
+                    <input
+                        type="radio"
+                        name="propina"
+                        value="10"
+                    >
                     10%
                 </label>
 
                 <label>
-                    <input type="radio" name="propina" value="15">
+                    <input
+                        type="radio"
+                        name="propina"
+                        value="15"
+                    >
                     15%
                 </label>
 
                 <label>
-                    <input type="radio" name="propina" value="20">
+                    <input
+                        type="radio"
+                        name="propina"
+                        value="20"
+                    >
                     20%
                 </label>
 
@@ -150,20 +183,20 @@
             </div>
 
 
-            <button id="confirmar-compra"> Confirmar compra</button>
+            <button id="confirmar-compra">
+                Confirmar compra
+            </button>
 
-            <button id="vaciar-carrito"> Vaciar carrito</button>
+            <button id="vaciar-carrito">
+                Vaciar carrito
+            </button>
+
 
             <div id="ticket"></div>
 
         </section>
 
-        
-
     </main>
-
-
-
 
 </body>
 
